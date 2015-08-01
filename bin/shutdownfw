@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ "$(/usr/local/bin/switch.php getswitchstate)" == "1" ]
+then
+	ssh -t -t shutdown@192.168.69.2 sudo /sbin/shutdown -h now
+    # wait 5 min to shutdown (should be enough)
+	sleep 300
+	/usr/local/bin/switch.php setswitchoff
+fi
