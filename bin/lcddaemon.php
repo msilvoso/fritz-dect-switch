@@ -59,8 +59,6 @@ $showState  = false;
 $pointer    = -1;
 $return     = 0;
 $lastbutton = 'NONE';
-$colors     = [ 10 => 'BLUE', 11 => 'RED', 12 => 'GREEN', 13 => 'YELLOW', 14 => 'VIOLET', 15 => 'TEAL' ];
-$buttons    = [ 'LEFT' => 10, 'UP' => 11, 'DOWN' => 12, 'RIGHT' => 13, 'SELECT' => 14, 'NONE' => 15 ];
 
 while($stayInLoop) {
     fwrite($pipes[0], "CHECK\n");
