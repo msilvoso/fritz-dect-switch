@@ -1,41 +1,42 @@
 #!/usr/bin/php5
 <?php
-$pid = pcntl_fork();
+if (!isset($argv[1]) || $argv[1] != '--debug') {
+    $pid = pcntl_fork();
 
-if ($pid == -1) {
-    exit("Could not fork child process");
+    if ($pid == -1) {
+        exit("Could not fork child process");
+    }
+
+    if ($pid) {
+        // parent
+        exit(0);
+    }
+
+    if (posix_setsid() === -1) {
+        exit("Could not become the session leader");
+    }
+
+    // create grand child 
+    $pid = pcntl_fork();
+
+    if ($pid == -1) {
+        exit("Could not fork grandchild process");
+    }
+
+    if ($pid) {
+        // child (parent)
+        exit(0);
+    }
+
+    if (!fclose(STDIN)) { exit('Could not close STDIN'); }
+    if (!fclose(STDERR)) { exit('Could not close STDERR'); }
+    if (!fclose(STDOUT)) { exit('Could not close STDOUT'); }
+
+    // recreate standard streams
+    $STDIN  = fopen('/dev/null', 'r');
+    $STDOUT = fopen('/dev/null', 'w');
+    $STDERR = fopen('/var/log/lcddaemon.log', 'a');
 }
-
-if ($pid) {
-    // parent
-    exit(0);
-}
-
-if (posix_setsid() === -1) {
-    exit("Could not become the session leader");
-}
-
-// create grand child 
-$pid = pcntl_fork();
-
-if ($pid == -1) {
-    exit("Could not fork grandchild process");
-}
-
-if ($pid) {
-    // child (parent)
-    exit(0);
-}
-
-if (!fclose(STDIN)) { exit('Could not close STDIN'); }
-if (!fclose(STDERR)) { exit('Could not close STDERR'); }
-if (!fclose(STDOUT)) { exit('Could not close STDOUT'); }
-
-// recreate standard streams
-$STDIN  = fopen('/dev/null', 'r');
-$STDOUT = fopen('/dev/null', 'w');
-$STDERR = fopen('/var/log/lcddaemon.log', 'a');
-
 // change directory to current
 chdir(dirname(__FILE__));
 require "fritz/fritz.php";
@@ -109,7 +110,7 @@ while($stayInLoop) {
             $showState = false;
         }
     }
-    usleep(500000);
+    usleep(250000);
 }
 fclose($pipes[0]);
 fclose($pipes[1]);

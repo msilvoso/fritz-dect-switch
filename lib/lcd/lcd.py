@@ -9,23 +9,33 @@ lcd = Adafruit_CharLCDPlate(1)
 
 constants = { 'SELECT':lcd.SELECT, 'RIGHT':lcd.RIGHT, 'DOWN':lcd.DOWN, 'UP':lcd.UP, 'LEFT':lcd.LEFT, 'OFF':lcd.OFF, 'RED':lcd.RED, 'GREEN':lcd.GREEN, 'BLUE':lcd.BLUE, 'YELLOW':lcd.YELLOW, 'TEAL':lcd.TEAL, 'VIOLET':lcd.VIOLET, 'WHITE':lcd.WHITE, 'ON':lcd.ON }
 
-btn = ((lcd.LEFT  , 'LEFT'),
-       (lcd.UP    , 'UP'),
-       (lcd.DOWN  , 'DOWN'),
-       (lcd.RIGHT , 'RIGHT'),
-       (lcd.SELECT, 'SELECT'))
+#btn = ((lcd.LEFT  , 'LEFT'),
+#       (lcd.UP    , 'UP'),
+#       (lcd.DOWN  , 'DOWN'),
+#       (lcd.RIGHT , 'RIGHT'),
+#       (lcd.SELECT, 'SELECT'))
+
+btn = ((16, 'LEFT'),
+       (8, 'UP'),
+       (4, 'DOWN'),
+       (2, 'RIGHT'),
+       (1, 'SELECT'))
 
 # command line arguments 
 if len(sys.argv) > 1:
     if sys.argv[1] == 'CHECK':
-        for b in btn:
-            if lcd.buttonPressed(b[0]):
-                sys.stdout.write(b[1])
-                sys.stdout.flush()
-                sys.exit(b[0] + 10)
-        sys.stdout.write('NONE')
-        sys.stdout.flush()
-        sys.exit(7)
+        pressed = lcd.buttons();
+        if not pressed:
+            sys.stdout.write("NONE\n")
+            sys.stdout.flush()
+            sys.exit(7)
+        else:
+            for b in btn:
+                if b[0] & pressed:
+                    sys.stdout.write(b[1]+"\n")
+                    sys.stdout.flush()
+                    sys.exit(b[0] + 10)
+                    break
     elif sys.argv[1] == 'CLEAR':
         lcd.clear()
         lcd.backlight(constants[sys.argv[2]])
@@ -33,6 +43,9 @@ if len(sys.argv) > 1:
     elif sys.argv[1] == 'OFF':
         lcd.clear()
         lcd.backlight(lcd.OFF)
+        sys.exit(0)
+    elif sys.argv[1] == 'BUTTONS':
+        sys.stdout.write(str(lcd.buttons()))
         sys.exit(0)
     else:
         lcd.clear()
@@ -50,16 +63,16 @@ while 1:
     #sys.stderr.flush()
     if len(sline) > 0:
         if sline[0] == 'CHECK':
-            pressed = 0
-            for b in btn:
-                if lcd.buttonPressed(b[0]):
-                    sys.stdout.write(b[1]+"\n")
-                    sys.stdout.flush()
-                    pressed = 1
-                    break
+            pressed = lcd.buttons();
             if not pressed:
                 sys.stdout.write("NONE\n")
                 sys.stdout.flush()
+            else:
+                for b in btn:
+                    if b[0] & pressed:
+                        sys.stdout.write(b[1]+"\n")
+                        sys.stdout.flush()
+                        break
         elif sline[0] == 'CLEAR':
             lcd.clear()
             lcd.backlight(constants[sline[1]])

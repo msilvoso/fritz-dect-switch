@@ -126,6 +126,6 @@ class lcdmenu
         } else {
             return "Problem_executing";
         }
-        return "Shutdown_called@OFF_in_2_min";   
+        return "Shutdown_now@OFF_in_5_min";   
     }
 }
