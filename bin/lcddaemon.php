@@ -52,7 +52,8 @@ $handler = proc_open('/usr/local/lib/lcd/lcd.py', $descriptorspec, $pipes);
 if ($handler === false) { exit('Could not open pipe to lcd.py'); }
 
 // loop
-$lcdmenu    = new lcdmenu();
+$fritzbox   = new fritzbox($fritzAddr, $fritzUser, $fritzPass, false);
+$lcdmenu    = new lcdmenu($fritzbox, $ain);
 $stayInLoop = true;
 $count      = 0;
 $light      = true;

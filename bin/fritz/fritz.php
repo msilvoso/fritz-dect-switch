@@ -11,12 +11,20 @@ class fritzbox
     protected $ssl=false;
     protected $sessionId=false;
 
-    public function __construct($url, $username, $password) 
+    public function __construct($url, $username, $password, $login = true) 
     {
         $this->fritzboxUrl = $url;
         $this->username = $username;
         $this->password = $password;
+        if ($login) {
+            $this->SID = $this->getSessionID();
+        }
+    }
+
+    public function login()
+    {
         $this->SID = $this->getSessionID();
+        return $this;
     }
 
     public function getSwitchList() 

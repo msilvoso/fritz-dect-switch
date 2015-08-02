@@ -1,11 +1,11 @@
 <?php
 
-require_once "fritz/fritz.php";
-
 class lcdmenu
 {
     const CRONFILE = '/etc/cron.d/switch';
-    protected $fritzConf;
+
+    protected $fritzbox;
+    protected $ain;
     protected $switchState;
     protected $switchPower;
     protected $menu;
@@ -22,23 +22,23 @@ class lcdmenu
     protected $cronjob; // array of all lines in crontab
     protected $line; // number of the line containing our job
 
-    public function __construct() 
+    public function __construct($fritzbox, $ain) 
     {
-        require "fritz/fritzconf.php";
-        $this->fritzConf = [ 'ain' => $ain, 'fritzAddr' => $fritzAddr, 'fritzUser' => $fritzUser, 'fritzPass' => $fritzPass ];
+        $this->fritzbox = $fritzbox;
+        $this->ain = $ain;
     }
 
     public function refresh() 
     {
         $this->menu = $this->main;
         // check if switch on or off
-        $fritzbox = new fritzbox($this->fritzConf['fritzAddr'], $this->fritzConf['fritzUser'], $this->fritzConf['fritzPass']);
-        $this->switchState = trim($fritzbox->getSwitchState($this->fritzConf['ain']));
+        $this->fritzbox->login();
+        $this->switchState = trim($this->fritzbox->getSwitchState($this->ain));
         if ($this->switchState === '1') {
             $this->menu[0] = $this->alt[0];
         }
-        $this->switchPower = trim($fritzbox->getSwitchPower($this->fritzConf['ain']));
-        $fritzbox->logout();
+        $this->switchPower = trim($this->fritzbox->getSwitchPower($this->ain));
+        $this->fritzbox->logout();
         // check cron job
         $cronjob          = file_get_contents(self::CRONFILE);
         $this->cronjob    = explode("\n", $cronjob);
@@ -107,8 +107,7 @@ class lcdmenu
 
     public function switchOn()
     {
-        $fritzbox = new fritzbox($this->fritzConf['fritzAddr'], $this->fritzConf['fritzUser'], $this->fritzConf['fritzPass']);
-        $fritzbox->setSwitchOn($this->fritzConf['ain']);
+        $this->fritzbox->login()->setSwitchOn($this->ain);
         $fritzbox->logout();
         sleep(2);
         $this->refresh();
