@@ -94,9 +94,17 @@ while($stayInLoop) {
                 fwrite($pipes[0], $lcdmenu->getDisplay());
                 $showState = false;
             }
-        }/*
         } elseif ($return == 'LEFT') {
-        } elseif ($return == 'RIGHT') {*/
+            $result = $lcdmenu->left();
+            if ($result !== false) {
+                fwrite($pipes[0], $result);
+            }
+        } elseif ($return == 'RIGHT') {
+            $result = $lcdmenu->right();
+            if ($result !== false) {
+                fwrite($pipes[0], $result);
+            }
+        }
         $count = 0;
         $light = true;
     }
