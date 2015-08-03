@@ -66,43 +66,40 @@ while($stayInLoop) {
     fwrite($pipes[0], "CHECK\n");
     $return = trim(fgets($pipes[1]));
     // main
-    if ($return !== 'NONE' && $lastbutton !== $return) {
+    if (($return === 'LEFT' || $return === 'RIGHT') && $light) {
+        $result = $lcdmenu->rlbuttons($return);
+        if ($result !== false) {
+            fwrite($pipes[0], $result);
+        }
+        $count = 0;
+        $light = true;
+    } elseif ($return !== 'NONE' && $lastbutton !== $return) {
         if (!$light) { //show status
             $lcdmenu->refresh();
-            if ($lcdmenu->getSwitchState() == '1') {
+            if ($lcdmenu->getSwitchState() === '1') {
                 fwrite($pipes[0], "State_:_ON@Power_".$lcdmenu->getSwitchPower()." GREEN\n");
             } else {
                 fwrite($pipes[0], "State_:_OFF RED\n");
             }
             $showState = true;
-        } elseif ($return == 'DOWN') {
+        } elseif ($return === 'DOWN') {
             if (!$showState) {
                 $lcdmenu->incPointer();
             }
             fwrite($pipes[0], $lcdmenu->getDisplay());
             $showState = false;
-        } elseif ($return == 'UP') {
+        } elseif ($return === 'UP') {
             if (!$showState) {
                 $lcdmenu->decPointer();
             }
             fwrite($pipes[0], $lcdmenu->getDisplay());
             $showState = false;
-        } elseif ($return == 'SELECT') {
+        } elseif ($return === 'SELECT') {
             if (!$showState) {
                 fwrite($pipes[0], $lcdmenu->execute()." WHITE\n");
             } else {
                 fwrite($pipes[0], $lcdmenu->getDisplay());
                 $showState = false;
-            }
-        } elseif ($return == 'LEFT') {
-            $result = $lcdmenu->left();
-            if ($result !== false) {
-                fwrite($pipes[0], $result);
-            }
-        } elseif ($return == 'RIGHT') {
-            $result = $lcdmenu->right();
-            if ($result !== false) {
-                fwrite($pipes[0], $result);
             }
         }
         $count = 0;

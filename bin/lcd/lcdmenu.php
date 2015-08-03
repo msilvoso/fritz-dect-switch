@@ -63,7 +63,8 @@ class lcdmenu
         
         // check time to shutdown
         $explodedLine = explode(' ', str_replace("\t", ' ', $line));
-        str_replace('#', '', $explodedLine[0]); // remove possible '#'
+        $explodedLine[0] = str_replace('#', '', $explodedLine[0]); // remove possible '#'
+        if ((int) $explodedLine[0] <10) $explodedLine[0] = '0'.$explodedLine[0];
         $this->cronTime = [ 'hour' => $explodedLine[1], 'minute' => $explodedLine[0] ];
         $this->menu[2][0] = str_replace('XXXX', implode(':', $this->cronTime), $this->menu[2][0]);
     }
@@ -105,14 +106,12 @@ class lcdmenu
         return call_user_func([$this, $this->menu[$this->pointer][2]]);
     }
 
-    public function left()
+    public function rlbuttons($button) // right and left buttons
     {
-        return false; //TODO: change this
-    }
-
-    public function right()
-    {
-        return false; //TODO: change this
+        if ($this->menu[$this->pointer][3] !== false && ($button === 'LEFT' || $button === 'RIGHT')) {
+            return call_user_func([$this, $this->menu[$this->pointer][3]], $button);
+        }
+        return false;
     }
 
     /*
@@ -155,5 +154,34 @@ class lcdmenu
             return "Problem_executing";
         }
         return "Shutdown_now@OFF_in_5_min";   
+    }
+
+    protected function changeCron($button)
+    {
+        if ($button === 'RIGHT') {
+            $this->cronTime['minute'] = ((int) $this->cronTime['minute'] + 10) % 60;
+            if ((int) $this->cronTime['minute'] === 0) {
+                $this->cronTime['hour'] = ((int) $this->cronTime['hour'] + 1) % 24;
+                $this->cronTime['minute'] .= '0';
+            }
+        } else {
+            if ((int) $this->cronTime['minute'] === 0) $this->cronTime['hour'] = ((int) $this->cronTime['hour'] + 23) % 24;
+            $this->cronTime['minute'] = ((int) $this->cronTime['minute'] + 50) % 60;
+            if ((int) $this->cronTime['minute'] === 0) $this->cronTime['minute'] .= '0';
+        }
+        echo str_replace('XXXX', implode(':', $this->cronTime), $this->main[2][0])." YELLOW\n";
+        return str_replace('XXXX', implode(':', $this->cronTime), $this->main[2][0])." YELLOW\n";
+    }
+
+    protected function setCron()
+    {
+        $this->cronJob[$this->line]   = ($this->cronDisabled ? '#' : '').
+                                        (int) $this->cronTime['minute'].' '.
+                                        (int) $this->cronTime['hour'].
+                                        preg_replace('/^#?\d*\s*\d*/', '', $this->cronJob[$this->line]);
+        file_put_contents(self::CRONFILE, implode("\n", $this->cronJob));
+        $this->cronReload();
+        $this->refresh();
+        return 'Shutdown_time@changed';
     }
 }
