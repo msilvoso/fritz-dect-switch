@@ -136,7 +136,7 @@ class lcdmenu
     public function switchOn()
     {
         $this->fritzbox->login()->setSwitchOn($this->ain);
-        $fritzbox->logout();
+        $this->fritzbox->logout();
         sleep(2);
         $this->refresh();
         return "Starting_up";   
